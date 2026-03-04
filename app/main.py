@@ -17,7 +17,7 @@ app.add_middleware(
 )
 
 # Cambia esto por el nombre de tu modelo en Hugging Face
-MODEL_NAME = "modelo_qwen_sql_final"
+MODEL_NAME = "app/modelo_qwen_sql_final"
 
 # Cargar modelo y tokenizer UNA sola vez al iniciar la app
 tokenizer = AutoTokenizer.from_pretrained('Qwen/Qwen2.5-Coder-1.5B')

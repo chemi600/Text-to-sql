@@ -1,29 +1,34 @@
-# Imagen base ligera
-FROM python:3.11-slim
+# Imagen base nginx
+FROM nginx:latest
 
-# Evitar que Python genere .pyc
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-
-# Crear directorio de trabajo
-WORKDIR /app
-
-# Instalar dependencias del sistema necesarias para transformers/torch
+# Instalar Python y pip
 RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Copiar requirements primero (mejor para cache)
+# Crear directorio para la app
+WORKDIR /app
+
+# Copiar requirements
 COPY requirements.txt .
 
-# Instalar dependencias
-RUN pip install --no-cache-dir -r requirements.txt
+# Instalar dependencias Python
+RUN pip3 install --no-cache-dir -r requirements.txt
 
-# Copiar el resto del código
-COPY . .
+# Copiar código backend
+COPY main.py .
 
-# Exponer el puerto
+# Copiar frontend a nginx
+COPY contents/ /usr/share/nginx/html/
+
+# Exponer puertos
 EXPOSE 8000
+EXPOSE 8001
 
-# Comando para arrancar FastAPI
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Copiar configuración personalizada de nginx
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Comando para arrancar ambos servicios
+CMD service nginx start && uvicorn main:app --host 0.0.0.0 --port 8001
