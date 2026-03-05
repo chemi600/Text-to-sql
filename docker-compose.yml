@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      # Optional: Mount the model folder locally if it exists to avoid re-downloading it every time,
+      # but by default it uses whatever is baked into the image or downloaded dynamically.
+      - ./backend/app/modelo_qwen_sql_final:/app/app/modelo_qwen_sql_final
+      # Persistent cache map for HuggingFace models to prevent 3GB downloads on every startup
+      - ./backend/huggingface_cache:/root/.cache/huggingface
+    environment:
+      - PYTHONUNBUFFERED=1
+      - HF_HOME=/root/.cache/huggingface
+    # Adding a platform directive here is NOT recommended for multi-arch setups. 
+    # Docker will fetch the matching platform for the target CPU.
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "8501:8501"
+    environment:
+      - BACKEND_URL=http://backend:8000
+    depends_on:
+      - backend
